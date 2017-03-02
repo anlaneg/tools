@@ -37,6 +37,7 @@ function compile_ovs()
 
 function compile_qemu()
 {
+    #goto http://wiki.qemu-project.org/Hosts/Linux
     export QEMU_DIR="$MY_OVS_BUILD_ROOT/anlaneg_qemu"
     (echo 'compile qemu';cd $QEMU_DIR;rm -rf bin; mkdir bin ; cd bin ; ../configure --target-list=x86_64-softmmu --enable-debug --extra-cflags='-g'; make -j4 )
 }

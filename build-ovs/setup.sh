@@ -54,11 +54,36 @@ function ovs_test()
     #./dpdk-devbind.py --status
     #./dpdk-devbind.py -b igb_uio 02:03.0
     #ls  -al /sys/class/net
-    ovs-vsctl add-port br0 myportnameone -- set Interface myportnameone \
-          type=dpdk options:dpdk-devargs=0000:02:02.0
-    ovs-vsctl add-port br0 myportnametwo -- set Interface myportnametwo \
-          type=dpdk options:dpdk-devargs=0000:02:03.0
+    #ovs-vsctl add-port br0 myportnameone -- set Interface myportnameone \
+    #      type=dpdk options:dpdk-devargs=0000:02:02.0
+    #ovs-vsctl add-port br0 myportnametwo -- set Interface myportnametwo \
+    #      type=dpdk options:dpdk-devargs=0000:02:03.0
+    ovs-vsctl add-port br0 vhost-user1 -- set Interface vhost-user1 type=dpdkvhostuser
 }
+
+function download_image()
+{
+    resource_dir="$MY_OVS_BUILD_ROOT/anlaneg_resource"
+    mkdir -p "$resource_dir"
+    if [ ! -e "$resource_dir/cirros-0.3.5-x86_64-disk.img" ];
+    then
+        wget -c http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img -O $resource_dir/cirros-0.3.5-x86_64-disk.img ;
+    fi;
+}
+
+function qemu_config()
+{
+    ovs-vsctl add-port br0 vhost-user1 -- set Interface vhost-user1 type=dpdkvhostuser
+    ovs-vsctl add-port br0 vhost-user2 -- set Interface vhost-user2 type=dpdkvhostuser
+}
+
+function setup_vm()
+{
+./qemu-system-x86_64 -enable-kvm -m 1024 -smp 2     -chardev socket,id=char0,path=/usr/local/var/run/openvswitch/vhost-user1     -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce     -device virtio-net-pci,netdev=mynet1,mac=52:54:00:02:d9:01     -object memory-backend-file,id=mem,size=1024M,mem-path=/dev/hugepages,share=on     -numa node,memdev=mem -mem-prealloc     -net user,hostfwd=tcp::10021-:22 -net nic   /home/along/project/anlaneg_resource/cirros-0.3.5-x86_64-disk.img
+}
+
+
 
 set_hugepages
 config_ovs
+download_image
