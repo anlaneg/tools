@@ -1,5 +1,5 @@
 Puppet::Type.newtype(:ini_file_conf) do
-  nameparam(:name) do
+  nameparam(:name,:namevar) do
     newvalues(/^\S+$/)
   end
   newparam(:path,:namevar=>true) do
