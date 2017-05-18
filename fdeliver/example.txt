@@ -1,0 +1,18 @@
+
+fdeliver /mnt/srcexample.txt /mnt/dstexample.txt -T root:password@10.10.10.1:/xx,root:password@10.10.10.1:/xx
+
+0.compare version
+1.scp xx to xx
+3.get md5
+2.send 'hello + md5'
+3.send 'file'
+4.get md5
+5.ok
+
+2 socket {1.cmd-socket,2.file-socket}
+
+
+fdeliver-core [src,relay,dst] --id=[id] --next=[next-ip:port] --prev=[prev-ip:port]
+fdeliver
+#script xx
+
