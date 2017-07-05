@@ -1,0 +1,16 @@
+--- yumdownloader.orig	2013-11-15 00:01:02.000000000 +0400
++++ yumdownloader	2015-05-21 12:48:25.877327687 +0300
+@@ -208,7 +208,12 @@
+                 self.tsInfo.addInstall(po)
+                 self.localPackages.append(po)
+             # Resolve dependencies
+-            self.resolveDeps()
++            result, errmsgs = self.resolveDeps()
++            if result == 1:
++                self.logger.error('Dependency resolution failed')
++                for msg in errmsgs:
++                    self.logger.error(msg)
++                sys.exit(1)
+             # Add newly added packages to the toDownload list
+             for pkg in self.tsInfo.getMembers():
+                 if not pkg in toDownload:

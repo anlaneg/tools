@@ -1,0 +1,23 @@
+--- yumdownloader.orig	2017-06-25 14:45:54.928828239 +0800
++++ yumdownloader	2017-06-25 14:49:33.921692046 +0800
+@@ -182,7 +182,7 @@
+ 
+             if not installable: # doing one at a time, apart from groups
+                 self.logger.error('No Match for argument %s' % pkg)
+-                continue
++                sys.exit(1)
+             for newpkg in installable:
+                 toActOn.extend(_best_convert_pkg2srcpkgs(self, opts, newpkg))
+             if toActOn:
+@@ -210,9 +210,11 @@
+             # Resolve dependencies
+             result, resultmsgs = self.resolveDeps()
+             if result == 1:
++                self.logger.error('Dependency resolution failed')
+                 for msg in resultmsgs:
+                     self.logger.critical(msg)
+                 self.logger.critical('Dependency resolution failed, some packages will not be downloaded.')
++                sys.exit(1)
+             # Add newly added packages to the toDownload list
+             for pkg in self.tsInfo.getMembers():
+                 if not pkg in toDownload:
