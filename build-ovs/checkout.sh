@@ -32,6 +32,7 @@ function compile_dpdk()
 function compile_ovs()
 {
     export OVS_DIR="$MY_OVS_BUILD_ROOT/anlaneg_ovs"
+    #apt-get install automake libtool libnuma-dev libpcap-dev
     (echo 'compile ovs';cd $OVS_DIR;./boot.sh;./configure --with-dpdk=$DPDK_BUILD --with-debug  CFLAGS='-g' ; make -j4 1>/dev/null);
 }
 
