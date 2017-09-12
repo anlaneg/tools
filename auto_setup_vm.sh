@@ -1,13 +1,13 @@
 #! /bin/bash
-#"lenovo-roller" {b1396ab1-9271-42c4-974e-8705171cb735}
-#"lenovo-zabbix" {86bce432-10fd-464d-82dc-b60b12855dd7}
-#"lenovo-ceph-mgmt" {4bfd78f1-bd8b-4b49-a002-4a37b5dd4b47}
-#"lenovo lxca" {59f4b313-3dda-4383-a4b9-3db18abcd529}
-zabbix_name="lenovo-zabbix"
+#"pxe" {b1396ab1-9271-42c4-974e-8705171cb735}
+#"zabbix" {86bce432-10fd-464d-82dc-b60b12855dd7}
+#"ceph-mgmt" {4bfd78f1-bd8b-4b49-a002-4a37b5dd4b47}
+#"vm" {59f4b313-3dda-4383-a4b9-3db18abcd529}
+zabbix_name="zabbix"
 all_vms=(
-"lenovo-roller"
+"pxe"
 "lenovo-ceph-mgmt"
-"lenovo lxca" 
+"vm" 
 "$zabbix_name"  # zabbix must last one
 )
 
