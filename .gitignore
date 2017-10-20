@@ -5,4 +5,6 @@ a.out
 .pydevproject
 testframe/.project
 testframe/.pydevproject
-
+python-setup/setuptools/demo/build/
+python-setup/setuptools/demo/demo.egg-info/
+python-setup/setuptools/demo/dist/
