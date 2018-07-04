@@ -221,7 +221,7 @@ struct ape_dev {
 	/* irq line succesfully requested by this driver, -1 otherwise */
 	int irq_line;
 	/* board revision */
-	u8 revision;
+	u8 revision;//版本号
 	/* interrupt count, incremented by the interrupt handler */
 	int irq_count;
 #if ALTPCIECHDMA_CDEV
@@ -791,6 +791,7 @@ static int __devinit probe(struct pci_dev *dev, const struct pci_device_id *id)
 		goto err_ape;
 	}
 	ape->pci_dev = dev;
+	//设置驱动的data
 	dev_set_drvdata(&dev->dev, ape);
 	printk(KERN_DEBUG "probe() ape = 0x%p\n", ape);
 
@@ -801,6 +802,7 @@ static int __devinit probe(struct pci_dev *dev, const struct pci_device_id *id)
 
 	/* allocate and map coherently-cached memory for a descriptor table */
 	/* @see LDD3 page 446 */
+	//申请4096字节的dma内存
 	ape->table_virt = (struct ape_chdma_table *)pci_alloc_consistent(dev,
 		APE_CHDMA_TABLE_SIZE, &ape->table_bus);
 	/* could not allocate table? */
@@ -834,10 +836,12 @@ static int __devinit probe(struct pci_dev *dev, const struct pci_device_id *id)
 		ape->msi_enabled = 1;
 	}
 
+	//自pci配置空间读取版本号
 	pci_read_config_byte(dev, PCI_REVISION_ID, &ape->revision);
 #if 0 /* example */
 	/* (for example) this driver does not support revision 0x42 */
     if (ape->revision == 0x42) {
+    	//对版本号为0x42的显示不支持
 		printk(KERN_DEBUG "Revision 0x42 is not supported by this driver.\n");
 		rc = -ENODEV;
 		goto err_rev;

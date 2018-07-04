@@ -18,4 +18,4 @@ Module.symvers
 *.o.ur-safe
 modules.order
 .cproject
-
+.settings/
