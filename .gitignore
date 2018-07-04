@@ -8,3 +8,14 @@ testframe/.pydevproject
 python-setup/setuptools/demo/build/
 python-setup/setuptools/demo/demo.egg-info/
 python-setup/setuptools/demo/dist/
+*.ko.cmd
+*.o.cmd
+*.o.cmd
+.tmp_versions/
+Module.symvers
+*.ko
+*.mod.c
+*.o.ur-safe
+modules.order
+.cproject
+
