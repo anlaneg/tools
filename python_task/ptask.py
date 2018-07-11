@@ -2,6 +2,8 @@ import socket
 import sys
 from subprocess import Popen, PIPE
 import time
+import os
+import signal
 
 class Process(object):
     def __init__(self,cwd,cmd):
@@ -9,9 +11,8 @@ class Process(object):
         self.p = Popen(cmd,cwd=cwd, shell=True, stdout=PIPE, stderr=PIPE)
         print("create process %s" % self.p.pid)
     def kill(self):
-        self.p.terminate()
-        time.sleep(2)
-        self.p.kill()
+	os.system('killall iperf')
+	time.sleep(10)
 
 class Client(object):
     def __init__(self,server,port):
@@ -35,9 +36,11 @@ class Server(object):
     def __init__(self,port):
         
         self.port=port
+
     def listen(self):
         obj = socket.socket()
-        obj.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR  , 1)
+        #obj.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEPORT,1)
+	obj.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR, 1)
         obj.bind(("0.0.0.0",self.port))
         obj.listen(5)
         while True:
@@ -109,10 +112,11 @@ def test():
         client.stop()
     else:
         IperfServerRun(port,"/home/anlang/").listen()
+
 if __name__ == "__main__":
-    ip="127.0.0.1"
-    port=33271
-    dir="/home/anlang/"
+    ip="0.0.0.0"
+    port=3327
+    dir="/root/result"
     #test()
     #exit(0)
     if len(sys.argv) >= 4 and sys.argv[1]=="client":
