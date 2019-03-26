@@ -1,6 +1,7 @@
 #encoding:utf-8
 import re
 from exception import DisConnectException
+from exception import OpenBashException
 class CommandCollection(object):
     __instance = None
     def __new__(cls, *args, **kwargs):  
@@ -42,8 +43,8 @@ class CommandCollection(object):
             return cls.__instance._exectue(context,first_token,argments,input)
         except DisConnectException as e:
             raise e
-        except Exception as e:
-            return str(e)
+        #except Exception as e:
+        #    return str(e)
     
     def _load_commands(self,cur_moudle):
         #print(cur_moudle)
@@ -153,7 +154,8 @@ class OpenCommand(CommandBase):
         print(context.connects)
         if client_id not in context.connects:
             return "We cant't find client %s\n" % client_id
-        return "open the shell %s" % client_id
+        #return "open the shell %s" % client_id
+        raise OpenBashException(client_id)
     
     def parser(self,input):
         client_id=input.strip().split(' ')[0]
