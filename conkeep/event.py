@@ -105,6 +105,7 @@ class EventLoop(object):
     def run(self,interval=None):
         inputs=[i.get_fd() for i in self.revents.values()]
         outputs=[i.get_fd() for i in self.wevents.values()]
+        print(inputs,outputs)
         
         if len(inputs) + len(outputs) > 0:
             readable, writable, exceptional = select.select(inputs, outputs, [],interval)

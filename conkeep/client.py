@@ -14,7 +14,7 @@ class Client(object):
             data = raw_input(">")
             if not data:
                 break
-            self.socket.send(data.encode())
+            self.socket.send("%s\n" % data.encode())
             data = self.socket.recv(self.conf.buffsize).decode()
             if not data:
                 break
