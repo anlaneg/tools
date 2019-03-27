@@ -783,6 +783,10 @@ static int __devinit probe(struct pci_dev *dev, const struct pci_device_id *id)
 	struct ape_dev *ape = NULL;
 	u8 irq_pin, irq_line;
 	printk(KERN_DEBUG "probe(dev = 0x%p, pciid = 0x%p)\n", dev, id);
+	if(dev)
+	{
+		printk(KERN_DEBUG "probe(dev = 0x%p, device=%X,vendor=%X,devfn=%X,subsystem_vendor=%X,subsystem_device=%X,class=%d)\n", dev, dev->device,dev->vendor,dev->devfn,dev->subsystem_vendor,dev->subsystem_device,dev->class);
+	}
 
 	/* allocate memory for per-board book keeping */
 	ape = kzalloc(sizeof(struct ape_dev), GFP_KERNEL);

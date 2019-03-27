@@ -4,6 +4,18 @@
  *  Created on: Jul 9, 2018
  *      Author: anlang
  */
+
+#include <linux/kernel.h>
+#include <linux/cdev.h>
+#include <linux/delay.h>
+#include <linux/dma-mapping.h>
+#include <linux/init.h>
+#include <linux/interrupt.h>
+#include <linux/io.h>
+#include <linux/jiffies.h>
+#include <linux/module.h>
+#include <linux/pci.h>
+
 #define __devinit
 #define __devexit
 #define __devexit_p(p) p
