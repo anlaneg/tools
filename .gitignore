@@ -21,4 +21,9 @@ modules.order
 .settings/
 *.cache.mk
 *.prvpci-m.cmd
+cmake-project/example-project/build/CMakeCache.txt
+cmake-project/example-project/build/CMakeFiles/
+cmake-project/example-project/build/Makefile
+cmake-project/example-project/build/cmake_install.cmake
+
 
