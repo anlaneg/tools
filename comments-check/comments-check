@@ -1,0 +1,194 @@
+#! /usr/bin/env python
+import re
+
+class ParseExecption(Exception):
+    def __init__(self,msg):
+        super(ParseExecption,self).__init__()
+        self.message = msg
+    def __str__(self):
+        return self.message
+        
+class DiffParseReport(object):
+    def __init__(self):
+        self.line=-1
+        self.isadd=Flase
+        self.content=[]
+    def add(self,linenum,line_content):
+        pass
+    def delete(self,linenum,line_content):
+        pass
+    def report(self):
+        pass
+
+class DiffAddLine(object):
+    def __init__(self):
+        pass
+    def process(self):
+        pass
+    
+class DiffMinusLine(object):
+    def __init__(self):
+        pass
+    def process(self):
+        pass
+            
+class DiffParse(object):
+    def __init__(self):
+        self.origin=None
+        self.diff=None
+        pass
+    
+
+class DiffHeader(object):
+    def __init__(self,origin,head):
+        self.origin=origin
+        self.head=head
+
+class DiffSection(object):
+    def __init__(self,orign_line,orign_first,head_line,head_first):
+        self.orign_line = orign_line
+        self.orign_first = orign_first
+        self.head_line = head_line
+        self.head_first = head_first
+        
+                 
+class CommentsCheck(object):
+    def __init__(self,path):
+        self.file=open(path,'r')
+        self.lineno=0
+        self.line=None
+        
+    def readline(self):
+        if self.line is not None:
+            line = self.line
+            self.line = None
+            return line
+        else:
+            self.lineno = self.lineno+1
+            return self.file.readline()
+        
+    def peekreadline(self):
+        self.lineno = self.lineno+1
+        self.line = self.file.readline()
+        return self.line
+            
+
+    def _file_line_update(self,line,starts_with,header):
+        if line == "%s /dev/null\n" % starts_with:
+            if starts_with == '---':
+                header.origin = '/dev/null'
+            else:
+                header.head = '/dev/null'
+        elif line == '%s %s\n' % (starts_with,header.origin) or line == '%s %s\n' % (starts_with,header.head):
+            pass
+        else:
+            return False
+        return True
+    
+    def is_file_line(self,line,starts_with,header):
+        if "---" == starts_with or "+++" == starts_with:
+            return self._file_line_update(line, starts_with, header)
+        return False
+    
+    def parse_diff_header(self,line):
+        pattern=re.compile('a/([^ ]+) b/(.*)\n$')
+        if not line.startswith('diff --git'):
+            print("line not startswitch 'diff -git'",line)
+            return False
+        
+        match=pattern.search(line)
+        if not match or len(match.groups()) != 2:
+            print("error",match)
+            return False
+        
+        header = DiffHeader("a/%s" % match.group(1),"b/%s" % match.group(2))
+        #print("*****",header.origin,header.head)
+        
+        #skip 'new file mode' 
+        line=self.readline()
+        if line.startswith('new file'):
+        	line=self.readline()
+
+        #skip 'index ' line
+        if not line.startswith('index '):
+            print("error line not startwith 'index'")
+            return False
+        
+        line=self.readline()
+        if not self.is_file_line(line,'---',header):
+            print("error,----",line)
+            return False
+        
+        line=self.readline()
+        if not self.is_file_line(line,'+++',header):
+            print("error,+++",line)
+            return False
+        
+        self.diff_header = header
+        return True
+    
+    def parse_diff_line(self,section):
+        while True:
+            line = self.peekreadline()
+            if not line:
+                break
+            #print(line)
+            if line.startswith('@@ '):
+                break
+            elif line.startswith('diff --git'):
+                #self.readline()
+                break
+            else:
+                if line.startswith('+'):
+                    #
+                    print('++',line)
+                    pass
+                elif line.startswith('-'):
+                    #
+                    print('--',line)
+                    pass
+                else:
+                    print(line)
+                    continue
+        return True
+                    
+    def parse_diff_section(self,line):
+        patterns={4:re.compile('@@ \-([0-9]+),([0-9]+) \+([0-9]+),([0-9]+) @@'),3:re.compile('@@ \-([0-9]+),([0-9]+) \+([0-9]+) @@')}
+        for key,p in patterns.items():
+            match=p.search(line)
+            if not match:
+                continue
+            else:
+                if  key == 4:
+                    section = DiffSection(match.group(1),match.group(2),match.group(3),match.group(4))
+                else:
+                    section = DiffSection(match.group(1),match.group(2),match.group(3),0)
+        if not section:
+            print("error",line,match,match.groups() if match else "",self.diff_header.origin,self.diff_header.head)
+            return False
+        self.diff_section = section
+        return True
+        
+    def parse(self):
+        while True:
+            line=self.readline()
+            if not line:
+                break
+            if line.startswith('diff --git'):
+                if not self.parse_diff_header(line):
+                    raise ParseExecption("parse diff header line fail:'%s'" % line)
+            elif line.startswith('@@ ') :
+                if not self.parse_diff_section(line):
+                    raise ParseExecption("parse diff section line fail:'%s'" % line)
+                else: 
+                    self.parse_diff_line(line)
+            else:
+                raise ParseExecption('no excpet line at %d:"%s"' % (self.lineno,line))
+            
+        
+if __name__ == "__main__":
+    try:
+        CommentsCheck('./test.diff').parse()
+    except ParseExecption as e:
+        print(e)
+    
