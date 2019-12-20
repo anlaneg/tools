@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 import re
+from __builtin__ import True
+from Carbon.Aliases import true
 
 class ParseExecption(Exception):
     def __init__(self,msg):
@@ -127,29 +129,101 @@ class CommentsCheck(object):
         self.diff_header = header
         return True
     
+    def is_comments_line(self,line):
+        line=line[1:]
+        line=line.strip()
+        if line.startswith('#') or line.startswith('//'):
+           return True
+        if line.startswith('/*'):
+            if line.find('*/') != -1:
+                return True
+        #search more line
+        return False
+        
+    
+    def check_comments_line(self,insert_lines,delete_lines):
+        if not insert_lines and not delete_lines:
+            return
+        if insert_lines and delete_lines:
+            pass
+        if insert_lines:
+            pass
+        else:
+            pass
+        
+    def _get_next_state(self,input,current_state):
+        """
+        state / input: '+'   '-'   'O'
+        0               1     2     0
+        1               1     3     5
+        2               4     2     5
+        3               5     3     5
+        4               4     5     5 
+        5               E     E     E
+        """
+        next_state=[
+            #state 0
+            [1,2,0]
+            #state 1
+            [1,3,5]
+            #state 2
+            [4,2,5]
+            #state 3
+            [5,3,5]
+            #state 4
+            [4,5,5]
+            #state 5
+        ]
+        if input!='+' and input!='-' and input!='O':
+            raise Exception('input error "%s"' % input)
+        if current_state < 0 or current_state >= 5:
+            raise Exception("current state error '%d'" % current_state)
+        
+        if input=='+':
+            index=0
+        elif input=='-':
+            index=1
+        else:
+            index=2
+            
+        return next_state[current_state][input]
+    
     def parse_diff_line(self,section):
+        insert_lines=[]
+        delete_lines=[]
+        state=0
         while True:
             line = self.peekreadline()
             if not line:
                 break
-            #print(line)
+            
             if line.startswith('@@ '):
                 break
-            elif line.startswith('diff --git'):
-                #self.readline()
+            
+            if line.startswith('diff --git'):
                 break
+            
+            if line.startswith('+'):
+                    insert_lines.append(line)
+            elif line.startswith('-'):
+                delete_lines.append(line)
+            else:
+                continue
             else:
                 if line.startswith('+'):
-                    #
-                    print('++',line)
-                    pass
+                    if self.is_comments_line(line):
+                        pass
+                    else:
+                        #print('++',line)
+                        pass
                 elif line.startswith('-'):
                     #
                     print('--',line)
                     pass
                 else:
-                    print(line)
+                    #print('ignore',line)
                     continue
+        self.check_comments_line(insert_lines,delete_lines)
         return True
                     
     def parse_diff_section(self,line):
@@ -192,3 +266,4 @@ if __name__ == "__main__":
     except ParseExecption as e:
         print(e)
     
+
