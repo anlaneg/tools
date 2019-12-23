@@ -1,7 +1,9 @@
 #! /usr/bin/env python
 import re
+import os
 from __builtin__ import True
 from Carbon.Aliases import true
+import diff_state_machine as diff_state
 
 class ParseExecption(Exception):
     def __init__(self,msg):
@@ -130,68 +132,121 @@ class CommentsCheck(object):
         return True
     
     def is_comments_line(self,line):
+        #skip first character
         line=line[1:]
         line=line.strip()
         if line.startswith('#') or line.startswith('//'):
            return True
-        if line.startswith('/*'):
-            if line.find('*/') != -1:
-                return True
+        #if line.startswith('/*'):
+        #    if line.find('*/') != -1:
+        #        return True
         #search more line
         return False
-        
     
+    def is_block_comments_line(self,line,insert_lines):
+        line=line[1:]
+        line=line.strip()
+        if line.startswith('/*'):
+            if line.ends_with('*/'):
+                return True,-1
+            for i in range(len(insert_lines)):
+                if insert_lines[i].find('*/') != -1:
+                    return True,i
+            return False,-1
+        return False,-1
+                    
+    def is_insert_comments_line(self,line,insert_lines):
+        dict={ idx:insert_lines[idx] for idx in range(len(insert_lines))}
+        key=None
+        for idx,insert_line in dict.items():
+            #print('*****',line,insert_line)
+            if insert_line[1:].startswith(line):
+                #no inc 1 here
+                comment_line=insert_line[len(line):]
+                #print('*****',comment_line,"+++++",self.is_comments_line(comment_line))
+                if self.is_comments_line(comment_line):
+                    #print('*****',comment_line,idx,len(dict))
+                    key=idx
+                    break
+        if key is not None:
+            dict.pop(key)
+        #print(key is not None,key,dict,dict.values())
+        return key is not None,dict.values()
+                
     def check_comments_line(self,insert_lines,delete_lines):
         if not insert_lines and not delete_lines:
             return
+        
         if insert_lines and delete_lines:
-            pass
-        if insert_lines:
-            pass
-        else:
-            pass
-        
-    def _get_next_state(self,input,current_state):
-        """
-        state / input: '+'   '-'   'O'
-        0               1     2     0
-        1               1     3     5
-        2               4     2     5
-        3               5     3     5
-        4               4     5     5 
-        5               E     E     E
-        """
-        next_state=[
-            #state 0
-            [1,2,0]
-            #state 1
-            [1,3,5]
-            #state 2
-            [4,2,5]
-            #state 3
-            [5,3,5]
-            #state 4
-            [4,5,5]
-            #state 5
-        ]
-        if input!='+' and input!='-' and input!='O':
-            raise Exception('input error "%s"' % input)
-        if current_state < 0 or current_state >= 5:
-            raise Exception("current state error '%d'" % current_state)
-        
-        if input=='+':
-            index=0
-        elif input=='-':
-            index=1
-        else:
-            index=2
+            for line in delete_lines:
+                result,insert_lines=self.is_insert_comments_line(line[1:].rstrip('\n'),insert_lines)
+                if result:
+                    continue
+                print("Warning (%s) line+-- (%s)" % (self.diff_header.head,line.rstrip('\n')))
+            for line in insert_lines:
+                if not self.is_comments_line(line):
+                    print("Warning (%s) line+-+ (%s)" % (self.diff_header.head,line.rstrip('\n')))
             
-        return next_state[current_state][input]
+        elif insert_lines:
+            for line in insert_lines:
+                if not self.is_comments_line(line):
+                    print("Warning (%s) line++  (%s)" % (self.diff_header.head,line.rstrip('\n')))
+        else:
+            for line in delete_lines:
+                print("Warning (%s) line--  (%s)" % (self.diff_header.head,line.rstrip('\n')))
+            pass
+        
+#     def _get_next_state(self,input,current_state):
+#         """
+# state machine / input: '+'   '-'   'O'
+#         0               1     2     0
+#         1               1     3     5
+#         2               4     2     5
+#         3               5     3     5
+#         4               4     5     5 
+#         5               E     E     E
+#         """
+#         next_state=[
+#             #state 0
+#             [1,2,0],
+#             #state 1
+#             [1,3,5],
+#             #state 2
+#             [4,2,5],
+#             #state 3
+#             [5,3,5],
+#             #state 4
+#             [4,5,5],
+#             #state 5
+#         ]
+#         if input!='+' and input!='-' and input!='O':
+#             raise Exception('input error "%s"' % input)
+#         if current_state < 0 or current_state >= 5:
+#             raise Exception("current state error '%d'" % current_state)
+#         
+#         if input=='+':
+#             index=0
+#         elif input=='-':
+#             index=1
+#         else:
+#             index=2
+#             
+#         return next_state[current_state][input]
     
+#     def process_current_state(self,current_state):
+#         if current_state not in [0,1,2,3,4,5]:
+#             raise Exception("state error '%d'" % current_state)
+#         if current_state == 5:
+#             pass
+#         else:
+#             pass
+        
     def parse_diff_line(self,section):
+        state_machine=diff_state.DiffStateMachine()
         insert_lines=[]
         delete_lines=[]
         state=0
+        
         while True:
             line = self.peekreadline()
             if not line:
@@ -204,25 +259,27 @@ class CommentsCheck(object):
                 break
             
             if line.startswith('+'):
+                state=state_machine.get_next_state('+', state)
+                if state != diff_state.DiffStateMachine.LAST_STATE:
                     insert_lines.append(line)
+                    continue
             elif line.startswith('-'):
-                delete_lines.append(line)
+                state=state_machine.get_next_state('-', state)
+                if state != diff_state.DiffStateMachine.LAST_STATE:
+                    delete_lines.append(line)
+                    continue
             else:
-                continue
-            else:
-                if line.startswith('+'):
-                    if self.is_comments_line(line):
-                        pass
-                    else:
-                        #print('++',line)
-                        pass
-                elif line.startswith('-'):
-                    #
-                    print('--',line)
-                    pass
-                else:
+                state=state_machine.get_next_state('O', state)
+                if state != diff_state.DiffStateMachine.LAST_STATE:
                     #print('ignore',line)
                     continue
+            
+            #state == diff_state.DiffStateMachine.LAST_STATE
+            self.check_comments_line(insert_lines,delete_lines)
+            #state machine reset
+            state = 0
+            insert_lines=[]
+            delete_lines=[]
         self.check_comments_line(insert_lines,delete_lines)
         return True
                     
