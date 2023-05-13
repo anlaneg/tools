@@ -5,5 +5,5 @@ import (
 )
 
 func Println(format string) {
-	fmt.Println(format)	
+	fmt.Println(format)
 }

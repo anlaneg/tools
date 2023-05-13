@@ -1,7 +1,7 @@
 package main
 
 import (
-"github.com/anlaneg/tools/go-test/utils"
+	"github.com/anlaneg/tools/go-test/utils"
 )
 
 func main() {
