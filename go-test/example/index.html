@@ -1,0 +1,16 @@
+<html>
+<head>
+	<title>test</title>
+	<script>
+		var id = 0;
+		function button_click() {
+			id = id + 1;
+			document.getElementById("demo").innerHTML = "I have changed " + id + "!";	
+		}
+	</script>
+</head>
+<body>
+	<h1 id="demo">hello</h1>
+	<button onclick="button_click()">click me</button>
+</body>
+</html>
